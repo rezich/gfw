@@ -1,4 +1,4 @@
-Gen :: #type s64;
+Gen :: #type u64;
 
 Handle :: struct (T: Type) {
     #assert is_subclass_of(type_info(T), "Entity");
@@ -6,24 +6,19 @@ Handle :: struct (T: Type) {
     gen: Gen;
 }
 Entity :: struct {
-    gen: Gen = -1;
+    gen: Gen = 0;
 }
 
-spawn :: (entity: $T/Entity) {
-    #insert #run sprint("storage := *entity_storage._%;", T);
-    bucket_array_add(storage, entity);
-}
-
-spawn_with_handle :: (entity: $T/Entity) -> Handle(T) {
+spawn :: (entity: $T/Entity) -> Handle(T) {
     #insert #run sprint("gen := *entity_storage.gens[Entity_Types.%];", T);
     #insert #run sprint("storage := *entity_storage._%;", T);
     locator := bucket_array_add(storage, entity);
     pointer := bucket_array_find_pointer(storage, locator);
     handle: Handle(T);
     handle.ptr = pointer;
-    handle.gen = pointer.gen;
-    pointer.gen = <<gen;
     <<gen += 1;
+    pointer.gen = <<gen;
+    handle.gen = pointer.gen;
     return handle;
 }
 
@@ -31,7 +26,11 @@ despawn :: (entity: *$T/Entity) {
 
 }
 
-make_handle :: (entity: *$T/Entity) -> Handle(T) {
+despawn :: (handle: Handle($T)) {
+
+}
+
+make_handle :: (entity: *$T/Entity) -> Handle(T) #must {
     handle: Handle(T);
     handle.ptr = entity;
     handle.gen = entity.gen;
@@ -39,12 +38,19 @@ make_handle :: (entity: *$T/Entity) -> Handle(T) {
 }
 
 get_from_handle :: (handle: Handle($T)) -> entity: *T = null, gone := false #must {
-    if handle.ptr.gen != handle.gen return gone = true;
+    if (<<handle.ptr).gen != handle.gen return gone = true;
     return handle.ptr;
 }
 
-all :: (type: Type) -> *Bucket_Array {
-    #insert #run sprint("return *entity_storage._%;");
+/*all :: ($type: Type) -> for_expansion {
+    #insert #run sprint("return *entity_storage._%.for_expansion;", type);
+    //#insert #run sprint("storage := *entity_storage._%;", T);
+    //return storage;
+    //return null;
+}*/
+
+each :: inline ($T: Type) -> *Bucket_Array(T, 20, true) {
+
 }
 
 bucket_array_find_pointer :: (using array: *Bucket_Array, locator: Bucket_Locator) -> *array.type {
@@ -59,3 +65,5 @@ bucket_array_find_pointer :: (using array: *Bucket_Array, locator: Bucket_Locato
 #placeholder Entity_Storage;
 
 entity_storage: Entity_Storage;
+
+#import "Compiler";

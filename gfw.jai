@@ -69,8 +69,8 @@ Entity_Types :: enum {
 }
 DONE
 
-
 generate_code :: (w: Workspace) {
+    items_per_bucket := 20;
     quick_sort(entity_type_names, compare_strings);
     type_names := join(..entity_type_names, ", ");
     type_names_for_enum := join(..entity_type_names, ";\n    ");
@@ -80,7 +80,6 @@ generate_code :: (w: Workspace) {
         defer free_buffers(*builder);
 
         for entity_type_names {
-            items_per_bucket := 20;
             print_to_builder(*builder, "    _%1: Bucket_Array(%1, %2, true);\n", it, items_per_bucket);
         }
         entity_storage_string = builder_to_string(*builder);

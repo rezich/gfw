@@ -1,10 +1,20 @@
 Coin :: struct {
     using base: Entity;
+    my_arbitrary_member: int;
+}
+simulate :: (using coin: *Coin, dt: float) {
+    print("simulating Coin %\n", gen);
+}
+present :: (using coin: *Coin) {
+    print("presenting Coin %\n", gen);
 }
 
 Block :: struct {
     using base: Entity;
     number: int;
+}
+simulate :: (using block: *Block, dt: float) {
+    print("simulating Block %\n", gen);
 }
 
 Bad :: struct {}
@@ -16,14 +26,12 @@ main :: () {
 
     print("entity_storage is: %\n", entity_storage);
 
+    some_handle: Handle(Block);
+
     {
         b: Block;
         b.number = 108;
-        bh := spawn_with_handle(b);
-        bp, gone := get_from_handle(bh);
-        assert(gone == false);
-        //you_cant_do_this := get_from_handle(bh);
-        hnd := make_handle(bp);
+        spawn(b);
     }
     {
         b: Block;
@@ -31,9 +39,26 @@ main :: () {
         spawn(b);
     }
     {
-        for all(Block) {
-            
-        }
+        b: Block;
+        b.number = 666;
+        some_handle = spawn(b);
+        print("some_handle: %\n", some_handle);
+    }
+    {
+        b: Block;
+        b.number = 777;
+        spawn(b);
+    }
+    {
+        despawn(some_handle);
+    }
+    
+
+    {
+        dt := 0.016666;
+        using entity_storage;
+        for _Block simulate(it, dt);
+        for _Coin simulate(it, dt);
     }
 }
 
@@ -41,5 +66,3 @@ main :: () {
 
 #import "Basic";
 #import "Bucket_Array";
-#import "Compiler"; // is_subclass_of()
-#import "Hash_Table";
