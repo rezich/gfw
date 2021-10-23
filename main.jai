@@ -1,3 +1,5 @@
+THREE_DIMENSIONAL :: false;
+
 Coin :: struct {
     using base: Entity;
     style: Coin_Style;
@@ -11,11 +13,11 @@ Coin_Style :: enum {
 }
 
 simulate :: (using coin: *Coin, dt: float) {
-    print("simulating Coin % (style: %)\n", gen, style);
+    print("simulating Coin#% (style: %)\n", gen, style);
 }
 
 /*present :: (using coin: *Coin) {
-    print("presenting Coin %\n", gen);
+    print("presenting Coin#%\n", gen);
 }*/
 
 
@@ -26,7 +28,7 @@ Block :: struct {
 }
 
 simulate :: (using block: *Block, dt: float) {
-    print("simulating Block % (number: %)\n", gen, number);
+    print("simulating Block#% (number: %)\n", gen, number);
 }
 
 
@@ -40,7 +42,7 @@ main :: () {
 
     some_handle: Handle(Block);
     some_other_handle: Handle(Coin);
-
+    print("--------------------\n");
     {
         b: Block;
         b.number = 108;
@@ -82,8 +84,10 @@ main :: () {
     }
     //--------------------------------------------------------------------------
     {
+        print("--------------------\n");
         dt := 0.0166666;
         simulate(dt);
+        print("--------------------\n");
     }
     //--------------------------------------------------------------------------
     {
@@ -95,8 +99,10 @@ main :: () {
     }
     //--------------------------------------------------------------------------
     {
+        print("--------------------\n");
         dt := 0.0166666;
         simulate(dt);
+        print("--------------------\n");
     }
     //--------------------------------------------------------------------------
 }

@@ -8,7 +8,13 @@ Handle :: struct (T: Type) {
 }
 
 Entity :: struct {
-    gen: Gen = 0;
+    gen: Gen;
+    #if THREE_DIMENSIONAL {
+        position: Vector3;
+    }
+    else {
+        position: Vector2;
+    }
 }
 
 spawn :: (entity: $T/Entity) -> Handle(T) {
@@ -16,17 +22,21 @@ spawn :: (entity: $T/Entity) -> Handle(T) {
     #insert #run sprint("storage := *entity_storage._%;", T);
     locator := bucket_array_add(storage, entity);
     pointer := bucket_array_find_pointer(storage, locator);
+    
+    <<gen += 1;
+    pointer.gen = <<gen;
+    print("spawning %#%\n", T, <<gen);
+
     handle: Handle(T);
     handle.ptr = pointer;
     handle.loc = locator;
-    <<gen += 1;
-    pointer.gen = <<gen;
     handle.gen = pointer.gen;
     return handle;
 }
 
 despawn :: (handle: Handle($T)) {
     #insert #run sprint("storage := *entity_storage._%;", T);
+    print("despawning %#%\n", T, handle.gen);
     bucket_array_remove(storage, handle.loc);
 }
 
@@ -70,3 +80,4 @@ bucket_array_find_pointer :: (using array: *Bucket_Array, locator: Bucket_Locato
 entity_storage: Entity_Storage;
 
 #import "Compiler";
+#import "Math";
