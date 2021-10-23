@@ -35,17 +35,18 @@ spawn :: (entity: $T/Entity) -> Handle(T) {
 }
 
 despawn :: (handle: Handle($T)) {
+    handle.ptr.gen = 0;
     #insert #run sprint("storage := *entity_storage._%;", T);
-    print("despawning %#%\n", T, handle.gen);
+    print("despawning %#% (%)\n", T, handle.gen, handle.ptr.gen);
     bucket_array_remove(storage, handle.loc);
 }
 
 // not sure if this is strictly necessary...?
 despawn :: inline (entity: *$T/Entity) {
-    despawn(make_handle(entity));
+    despawn(get_handle(entity));
 }
 
-make_handle :: (entity: *$T/Entity) -> Handle(T) #must {
+get_handle :: (entity: *$T/Entity) -> Handle(T) #must {
     handle: Handle(T);
     handle.ptr = entity;
     handle.gen = entity.gen;
@@ -53,7 +54,7 @@ make_handle :: (entity: *$T/Entity) -> Handle(T) #must {
 }
 
 get_from_handle :: (handle: Handle($T)) -> entity: *T = null, gone := false #must {
-    if (<<handle.ptr).gen != handle.gen return gone = true;
+    if handle.ptr.gen != handle.gen return gone = true;
     return handle.ptr;
 }
 

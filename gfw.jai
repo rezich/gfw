@@ -67,6 +67,11 @@ Entity_Storage :: struct {
 Entity_Types :: enum {
     %4;
 }
+
+reset_entity_storage :: () {
+    using entity_storage;
+    for 0..NUM_ENTITY_TYPES-1 gens[it] = 0;
+%5}
 DONE
 
 generate_code :: (w: Workspace) {
@@ -84,8 +89,18 @@ generate_code :: (w: Workspace) {
         }
         entity_storage_string = builder_to_string(*builder);
     }
+    reset_entity_storage_string: string;
+    {
+        builder: String_Builder;
+        defer free_buffers(*builder);
+
+        for entity_type_names {
+            print_to_builder(*builder, "    bucket_array_reset(*_%1);\n", it, items_per_bucket);
+        }
+        reset_entity_storage_string = builder_to_string(*builder);
+    }
     
-    build_string := sprint(INSERTION_STRING, entity_type_names.count, type_names, entity_storage_string, type_names_for_enum);
+    build_string := sprint(INSERTION_STRING, entity_type_names.count, type_names, entity_storage_string, type_names_for_enum, reset_entity_storage_string);
     
     add_build_string(build_string, w);
     

@@ -16,9 +16,9 @@ simulate :: (using coin: *Coin, dt: float) {
     print("simulating Coin#% (style: %)\n", gen, style);
 }
 
-/*present :: (using coin: *Coin) {
+present :: (using coin: *Coin) {
     print("presenting Coin#%\n", gen);
-}*/
+}
 
 
 
@@ -29,6 +29,10 @@ Block :: struct {
 
 simulate :: (using block: *Block, dt: float) {
     print("simulating Block#% (number: %)\n", gen, number);
+}
+
+present :: (using block: *Block) {
+    print("presenting Block#%\n", gen);
 }
 
 
@@ -42,76 +46,93 @@ main :: () {
 
     some_handle: Handle(Block);
     some_other_handle: Handle(Coin);
-    print("--------------------\n");
-    {
-        b: Block;
-        b.number = 108;
-        spawn(b);
-    }
-    {
-        c: Coin;
-        c.style = .FUNKY;
-        spawn(c);
-    }
-    {
-        b: Block;
-        b.number = 42;
-        spawn(b);
-    }
-    {
-        b: Block;
-        b.number = 4815162342;
-        spawn(b);
-    }
-    {
-        b: Block;
-        b.number = 666;
-        some_handle = spawn(b);
-        print("some_handle: %\n", some_handle);
-    }
-    {
-        c: Coin;
-        c.style = .FRESH;
-        some_other_handle = spawn(c);
-    }
-    {
-        b: Block;
-        b.number = 777;
-        spawn(b);
-    }
-    {
-        despawn(some_handle);
-    }
-    //--------------------------------------------------------------------------
-    {
+    // let's do the whole thing twice to prove reset_entity_storage() works
+    for 0..1 {
         print("--------------------\n");
-        dt := 0.0166666;
-        simulate(dt);
-        print("--------------------\n");
-    }
-    //--------------------------------------------------------------------------
-    {
-        to_despawn, gone := get_from_handle(some_other_handle);
-        assert(!gone);
-        if !gone {
-            despawn(to_despawn);
+        {
+            b: Block;
+            b.number = 108;
+            spawn(b);
+        }
+        {
+            c: Coin;
+            c.style = .FUNKY;
+            spawn(c);
+        }
+        {
+            b: Block;
+            b.number = 42;
+            spawn(b);
+        }
+        {
+            b: Block;
+            b.number = 4815162342;
+            spawn(b);
+        }
+        {
+            b: Block;
+            b.number = 13;
+            some_handle = spawn(b);
+            print("some_handle: %\n", some_handle);
+        }
+        {
+            c: Coin;
+            c.style = .FRESH;
+            some_other_handle = spawn(c);
+        }
+        {
+            b: Block;
+            b.number = 777;
+            spawn(b);
+        }
+        {
+            despawn(some_handle);
+        }
+        //----------------------------------------------------------------------
+        {
+            print("--------------------\n");
+            dt := 0.0166666;
+            simulate(dt);
+            present();
+            print("--------------------\n");
+        }
+        //----------------------------------------------------------------------
+        {
+            to_despawn, gone := get_from_handle(some_other_handle);
+            assert(!gone);
+            if !gone {
+                despawn(to_despawn);
+            }
+        }
+        //----------------------------------------------------------------------
+        {
+            print("--------------------\n");
+            dt := 0.0166666;
+            simulate(dt);
+            present();
+            print("--------------------\n");
+        }
+        //----------------------------------------------------------------------
+        {
+            print("resetting entity_storage\n");
+            reset_entity_storage();
         }
     }
-    //--------------------------------------------------------------------------
-    {
-        print("--------------------\n");
-        dt := 0.0166666;
-        simulate(dt);
-        print("--------------------\n");
-    }
-    //--------------------------------------------------------------------------
 }
 
 simulate :: (dt: float) {
-    dt := 0.016666;
+    // for whatever reason, our game design dictates that we need to simulate
+    // Blocks before we simulate Coins...
     using entity_storage;
     for _Block simulate(it, dt);
     for _Coin simulate(it, dt);
+}
+
+present :: () {
+    // ...but we need to present Coins before we present Blocks.
+    using entity_storage;
+    for _Coin present(it);
+    for _Block present(it);
 }
 
 
