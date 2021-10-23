@@ -46,6 +46,8 @@ main :: () {
 
     some_handle: Handle(Block);
     some_other_handle: Handle(Coin);
+    yet_another_handle: Handle(Block);
+    final_test_handle: Handle(Block);
     // let's do the whole thing twice to prove reset_entity_storage() works
     for 0..1 {
         print("--------------------\n");
@@ -82,11 +84,18 @@ main :: () {
         }
         {
             b: Block;
-            b.number = 777;
-            spawn(b);
+            b.number = 77;
+            yet_another_handle = spawn(b);
         }
         {
             despawn(some_handle);
+        }
+        {
+            seven, gone := get_from_handle(yet_another_handle);
+            if !gone {
+                final_test_handle = get_handle(seven);
+                seven.number = 7;
+            }
         }
         //----------------------------------------------------------------------
         {
@@ -102,6 +111,12 @@ main :: () {
             assert(!gone);
             if !gone {
                 despawn(to_despawn);
+            }
+        }
+        {
+            seven, gone := get_from_handle(final_test_handle);
+            if !gone {
+                seven.number = 777;
             }
         }
         //----------------------------------------------------------------------

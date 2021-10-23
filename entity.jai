@@ -9,6 +9,7 @@ Handle :: struct (T: Type) {
 
 Entity :: struct {
     gen: Gen;
+    loc: Bucket_Locator;
     #if THREE_DIMENSIONAL {
         position: Vector3;
     }
@@ -25,6 +26,7 @@ spawn :: (entity: $T/Entity) -> Handle(T) {
     
     <<gen += 1;
     pointer.gen = <<gen;
+    pointer.loc = locator;
     print("spawning %#%\n", T, <<gen);
 
     handle: Handle(T);
@@ -50,6 +52,7 @@ get_handle :: (entity: *$T/Entity) -> Handle(T) #must {
     handle: Handle(T);
     handle.ptr = entity;
     handle.gen = entity.gen;
+    handle.loc = entity.loc;
     return handle;
 }
 
