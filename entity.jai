@@ -4,6 +4,7 @@ Handle :: struct (T: Type) {
     #assert is_subclass_of(type_info(T), "Entity");
     ptr: *T;
     gen: Gen;
+    loc: Bucket_Locator;
 }
 
 Entity :: struct {
@@ -17,18 +18,21 @@ spawn :: (entity: $T/Entity) -> Handle(T) {
     pointer := bucket_array_find_pointer(storage, locator);
     handle: Handle(T);
     handle.ptr = pointer;
+    handle.loc = locator;
     <<gen += 1;
     pointer.gen = <<gen;
     handle.gen = pointer.gen;
     return handle;
 }
 
-despawn :: (entity: *$T/Entity) {
-
+despawn :: (handle: Handle($T)) {
+    #insert #run sprint("storage := *entity_storage._%;", T);
+    bucket_array_remove(storage, handle.loc);
 }
 
-despawn :: (handle: Handle($T)) {
-
+// not sure if this is strictly necessary...?
+despawn :: inline (entity: *$T/Entity) {
+    despawn(make_handle(entity));
 }
 
 make_handle :: (entity: *$T/Entity) -> Handle(T) #must {
