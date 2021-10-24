@@ -13,10 +13,12 @@ Coin_Style :: enum {
 }
 
 simulate :: (using coin: *Coin, dt: float) {
+    if despawning return;
     print("simulating Coin#% (style: %)\n", gen, style);
 }
 
 present :: (using coin: *Coin) {
+    if despawning return;
     print("presenting Coin#%\n", gen);
 }
 
@@ -28,10 +30,12 @@ Block :: struct {
 }
 
 simulate :: (using block: *Block, dt: float) {
+    if despawning return;
     print("simulating Block#% (number: %)\n", gen, number);
 }
 
 present :: (using block: *Block) {
+    if despawning return;
     print("presenting Block#%\n", gen);
 }
 
@@ -75,7 +79,6 @@ main :: () {
             b: Block;
             b.number = 13;
             some_handle = spawn(b);
-            print("some_handle: %\n", some_handle);
         }
         {
             c: Coin;
@@ -98,13 +101,7 @@ main :: () {
             }
         }
         //----------------------------------------------------------------------
-        {
-            print("--------------------\n");
-            dt := 0.0166666;
-            simulate(dt);
-            present();
-            print("--------------------\n");
-        }
+        do_frame();
         //----------------------------------------------------------------------
         {
             to_despawn, gone := get_from_handle(some_other_handle);
@@ -120,19 +117,31 @@ main :: () {
             }
         }
         //----------------------------------------------------------------------
-        {
-            print("--------------------\n");
-            dt := 0.0166666;
-            simulate(dt);
-            present();
-            print("--------------------\n");
-        }
+        do_frame();
         //----------------------------------------------------------------------
         {
-            print("resetting entity_storage\n");
+            print("resetting entity_storage for Block\n");
+            reset_entity_storage(.Block);
+        }
+        //----------------------------------------------------------------------
+        do_frame();
+        //----------------------------------------------------------------------
+        {
+            print("resetting entity_storage, all of it\n");
             reset_entity_storage();
         }
     }
+}
+
+
+
+do_frame :: () {
+    print("--------------------\n");
+    dt := 0.0166666;
+    simulate(dt);
+    present();
+    cleanup_despawning_entities();
+    print("--------------------\n");
 }
 
 simulate :: (dt: float) {

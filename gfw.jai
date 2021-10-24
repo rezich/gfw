@@ -61,6 +61,8 @@ NUM_ENTITY_TYPES :: %1;
 Entity_Storage :: struct {
 %3
     gens: [%1] u32;
+    despawning: struct {
+%7    }
     //types: [%1] Type : .[ %2 ];
 }
 
@@ -72,6 +74,17 @@ reset_entity_storage :: () {
     using entity_storage;
     for 0..NUM_ENTITY_TYPES-1 gens[it] = 0;
 %5}
+
+reset_entity_storage :: (type: Entity_Types) {
+    using entity_storage;
+    gens[type] = 0;
+    if type == {
+%6    }
+}
+
+cleanup_despawning_entities :: () {
+    using entity_storage;
+%8}
 DONE
 
 generate_code :: (w: Workspace) {
@@ -95,16 +108,46 @@ generate_code :: (w: Workspace) {
         defer free_buffers(*builder);
 
         for entity_type_names {
-            print_to_builder(*builder, "    bucket_array_reset(*_%1);\n", it, items_per_bucket);
+            print_to_builder(*builder, "    bucket_array_reset(*_%);\n", it);
         }
         reset_entity_storage_string = builder_to_string(*builder);
     }
+    reset_entity_storage_individual_string: string;
+    {
+        builder: String_Builder;
+        defer free_buffers(*builder);
+
+        for entity_type_names {
+            print_to_builder(*builder, "        case .%1; bucket_array_reset(*_%1);\n", it);
+        }
+        reset_entity_storage_individual_string = builder_to_string(*builder);
+    }
+    despawning_string: string;
+    {
+        builder: String_Builder;
+        defer free_buffers(*builder);
+
+        for entity_type_names {
+            print_to_builder(*builder, "        _%: [..] Bucket_Locator;\n", it);
+        }
+        despawning_string = builder_to_string(*builder);
+    }
+    cleanup_string: string;
+    {
+        builder: String_Builder;
+        defer free_buffers(*builder);
+
+        for entity_type_names {
+            print_to_builder(*builder, "    for despawning._%1 {\n        bucket_array_remove(*_%1, it);\n        print(\"ACTUALLY despawning %1\\n\");\n    }\n    array_reset(*despawning._%1);\n", it);
+        }
+        cleanup_string = builder_to_string(*builder);
+    }
     
-    build_string := sprint(INSERTION_STRING, entity_type_names.count, type_names, entity_storage_string, type_names_for_enum, reset_entity_storage_string);
+    build_string := sprint(INSERTION_STRING, entity_type_names.count, type_names, entity_storage_string, type_names_for_enum, reset_entity_storage_string, reset_entity_storage_individual_string, despawning_string, cleanup_string);
     
     add_build_string(build_string, w);
     
-    print("Adding build string:\n%\n", build_string);
+    print("Adding build string:\n----\n%\n----\n", build_string);
 }
 
 #import "Basic";

@@ -8,6 +8,7 @@ Handle :: struct (T: Type) {
 }
 
 Entity :: struct {
+    despawning: bool;
     gen: Gen;
     loc: Bucket_Locator;
     #if THREE_DIMENSIONAL {
@@ -27,6 +28,7 @@ spawn :: (entity: $T/Entity) -> Handle(T) {
     <<gen += 1;
     pointer.gen = <<gen;
     pointer.loc = locator;
+    pointer.despawning = false;
     print("spawning %#%\n", T, <<gen);
 
     handle: Handle(T);
@@ -37,15 +39,18 @@ spawn :: (entity: $T/Entity) -> Handle(T) {
 }
 
 despawn :: (handle: Handle($T)) {
+    _, gone := get_from_handle(handle);
+    if gone return;
     handle.ptr.gen = 0;
-    #insert #run sprint("storage := *entity_storage._%;", T);
-    print("despawning %#% (%)\n", T, handle.gen, handle.ptr.gen);
-    bucket_array_remove(storage, handle.loc);
+    handle.ptr.despawning = true;
+    #insert #run sprint("despawning_array := *entity_storage.despawning._%;", T);
+    array_add(despawning_array, handle.loc);
+    print("despawning %#%\n", T, handle.gen);
 }
 
-// not sure if this is strictly necessary...?
+// pretty sure this is just going to be for despawning yourself?
 despawn :: inline (entity: *$T/Entity) {
-    despawn(get_handle(entity));
+    despawn(get_handle(entity)); //TODO: don't be lazy here
 }
 
 get_handle :: (entity: *$T/Entity) -> Handle(T) #must {
@@ -57,7 +62,7 @@ get_handle :: (entity: *$T/Entity) -> Handle(T) #must {
 }
 
 get_from_handle :: (handle: Handle($T)) -> entity: *T = null, gone := false #must {
-    if handle.ptr.gen != handle.gen return gone = true;
+    if handle.ptr.despawning || handle.ptr.gen != handle.gen return gone = true;
     return handle.ptr;
 }
 
