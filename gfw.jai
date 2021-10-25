@@ -11,6 +11,10 @@ build :: () {
 
     add_build_file(tprint("%/main.jai", #filepath), w);
 
+    // automatically add all entity definition source files
+    entity_files := file_list("entities/");
+    for entity_files add_build_file(tprint("%/%", #filepath, it), w);
+
     message_loop();
 
     compiler_end_intercept(w);
@@ -50,7 +54,6 @@ message_loop :: () {
     }
 }
 
-
 generated_code := false;
 
 entity_type_names: [..] string;
@@ -88,7 +91,8 @@ cleanup_despawning_entities :: () {
 DONE
 
 generate_code :: (w: Workspace) {
-    items_per_bucket := 20;
+    items_per_bucket := 20; //TODO: move this to struct notes
+
     quick_sort(entity_type_names, compare_strings);
     type_names := join(..entity_type_names, ", ");
     type_names_for_enum := join(..entity_type_names, ";\n    ");
@@ -154,3 +158,4 @@ generate_code :: (w: Workspace) {
 #import "Compiler";
 #import "String";
 #import "Sort";
+#import "File_Utilities";

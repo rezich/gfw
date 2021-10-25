@@ -44,9 +44,6 @@ present :: (window: Window_Type) {
     draw_debug_text(4, 4, game.fps_string);
 }
 
-#load "entities/Coin.jai";
-#load "entities/Block.jai";
-
 #load "game.jai";
 
 #import "Basic";

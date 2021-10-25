@@ -93,6 +93,9 @@ move_with_velocity :: (using entity: *Entity, dt: float) {
 #placeholder NUM_ENTITY_TYPES;
 #placeholder entity_types;
 #placeholder Entity_Storage;
+// we don't seem to need these two but it seems to help with syntax highlighting
+#placeholder cleanup_despawning_entities;
+#placeholder reset_entity_storage;
 
 entity_storage: Entity_Storage;
 

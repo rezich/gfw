@@ -13,6 +13,13 @@ jai gfw.jai
 ./gfw
 ```
 
+start making a game by editing `main.jai`, which contains the program entry
+point, and the the `simulate()` and `present()` functions ("update" and "draw")
+that you'll want to use to make your game.
+
+entities should be defined in files in `entities/`, which are `#load`ed
+automatically when your game compiles.
+
 
 faq
 ---
