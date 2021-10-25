@@ -2,6 +2,12 @@ THREE_DIMENSIONAL :: false;
 
 main :: () {
     init_game();
+    {
+        p: Player;
+        p.position.x = xx (RENDER_WIDTH / 2);
+        p.position.y = xx (RENDER_HEIGHT / 2);
+        spawn(p);
+    }
 
     while true {
         reset_temporary_storage();
@@ -20,15 +26,6 @@ simulate :: (dt: float) {
     for _Block simulate(it, dt);
     for _Coin simulate(it, dt);
     for _Player simulate(it, dt);
-
-    if input_down(.MOUSE_BUTTON_LEFT) {
-        b: Block;
-        b.position.x = random_get_within_range(0, xx RENDER_WIDTH);
-        b.position.y = random_get_within_range(0, xx RENDER_HEIGHT);
-        b.velocity.x = random_get_within_range(100, 200) * ifx random_get() % 2 == 0 then -1 else 1;
-        b.velocity.y = random_get_within_range(100, 200) * ifx random_get() % 2 == 0 then -1 else 1;
-        spawn(b);
-    }
 }
 
 present :: (window: Window_Type) {

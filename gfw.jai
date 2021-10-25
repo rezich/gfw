@@ -33,12 +33,11 @@ message_loop :: () {
             for typechecked.structs {
                 code_struct := it.expression;
                 if is_subclass_of(code_struct.defined_type, "Entity") {
-                    //if code_struct
                     name := code_struct.defined_type.name;
                     added := array_add_if_unique(*entity_type_names, name);
                     if added {
                         print("Detected entity '%'.\n", name);
-                        array_add(*entity_items_per_bucket, get_bucket_size_or_default(code_struct));
+                        array_add(*entity_items_per_bucket, get_bucket_size(code_struct));
                     }
                 }
             }
@@ -158,7 +157,7 @@ generate_code :: (w: Workspace) {
     print("Adding build string:\n----\n%\n----\n", build_string);
 }
 
-get_bucket_size_or_default :: (header: *Code_Struct) -> int {
+get_bucket_size :: (header: *Code_Struct) -> int {
     DEFAULT_ITEMS_PER_BUCKET :: 32;
     BUCKET_SIZE_NOTE :: "bucket_size=";
     for header.notes if begins_with(it.text, BUCKET_SIZE_NOTE) {
