@@ -13,9 +13,11 @@ Entity :: struct {
     loc: Bucket_Locator;
     #if THREE_DIMENSIONAL {
         position: Vector3;
+        velocity: Vector3;
     }
     else {
         position: Vector2;
+        velocity: Vector2;
     }
 }
 
@@ -29,7 +31,7 @@ spawn :: (entity: $T/Entity) -> Handle(T) {
     pointer.gen = <<gen;
     pointer.loc = locator;
     pointer.despawning = false;
-    print("spawning %#%\n", T, <<gen);
+    //print("spawning %#%\n", T, <<gen);
 
     handle: Handle(T);
     handle.ptr = pointer;
@@ -45,7 +47,7 @@ despawn :: (handle: Handle($T)) {
     handle.ptr.despawning = true;
     #insert #run sprint("despawning_array := *entity_storage.despawning._%;", T);
     array_add(despawning_array, handle.loc);
-    print("despawning %#%\n", T, handle.gen);
+    //print("despawning %#%\n", T, handle.gen);
 }
 
 // pretty sure this is just going to be for despawning yourself?
@@ -81,6 +83,12 @@ bucket_array_find_pointer :: (using array: *Bucket_Array, locator: Bucket_Locato
     // plus ends up being more consise as well, as an added bonus.
     #insert #run sprint("return *entity_storage._%;", T);
 }*/
+
+move_with_velocity :: (using entity: *Entity, dt: float) {
+    position.x += velocity.x * dt;
+    position.y += velocity.y * dt;
+    #if THREE_DIMENSIONAL position.z += velocity.z * dt;
+}
 
 #placeholder NUM_ENTITY_TYPES;
 #placeholder entity_types;

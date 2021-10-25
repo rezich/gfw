@@ -138,7 +138,7 @@ generate_code :: (w: Workspace) {
         defer free_buffers(*builder);
 
         for entity_type_names {
-            print_to_builder(*builder, "    for despawning._%1 {\n        bucket_array_remove(*_%1, it);\n        print(\"ACTUALLY despawning %1\\n\");\n    }\n    array_reset(*despawning._%1);\n", it);
+            print_to_builder(*builder, "    for despawning._%1 {\n        bucket_array_remove(*_%1, it);\n        //print(\"ACTUALLY despawning %1\\n\");\n    }\n    array_reset(*despawning._%1);\n", it);
         }
         cleanup_string = builder_to_string(*builder);
     }
