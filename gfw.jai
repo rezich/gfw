@@ -33,9 +33,13 @@ message_loop :: () {
             for typechecked.structs {
                 code_struct := it.expression;
                 if is_subclass_of(code_struct.defined_type, "Entity") {
+                    //if code_struct
                     name := code_struct.defined_type.name;
                     added := array_add_if_unique(*entity_type_names, name);
-                    if added print("Detected entity '%'.\n", name);
+                    if added {
+                        print("Detected entity '%'.\n", name);
+                        array_add(*entity_items_per_bucket, get_bucket_size_or_default(code_struct));
+                    }
                 }
             }
             
@@ -57,6 +61,7 @@ message_loop :: () {
 generated_code := false;
 
 entity_type_names: [..] string;
+entity_items_per_bucket: [..] int;
 
 INSERTION_STRING :: #string DONE
 NUM_ENTITY_TYPES :: %1;
@@ -91,9 +96,8 @@ cleanup_despawning_entities :: () {
 DONE
 
 generate_code :: (w: Workspace) {
-    items_per_bucket := 20; //TODO: move this to struct notes
+    //quick_sort(entity_type_names, compare_strings);
 
-    quick_sort(entity_type_names, compare_strings);
     type_names := join(..entity_type_names, ", ");
     type_names_for_enum := join(..entity_type_names, ";\n    ");
     entity_storage_string: string;
@@ -101,8 +105,8 @@ generate_code :: (w: Workspace) {
         builder: String_Builder;
         defer free_buffers(*builder);
 
-        for entity_type_names {
-            print_to_builder(*builder, "    _%1: Bucket_Array(%1, %2, true);\n", it, items_per_bucket);
+        for it, i: entity_type_names {
+            print_to_builder(*builder, "    _%1: Bucket_Array(%1, %2, true);\n", it, entity_items_per_bucket[i]);
         }
         entity_storage_string = builder_to_string(*builder);
     }
@@ -152,6 +156,16 @@ generate_code :: (w: Workspace) {
     add_build_string(build_string, w);
     
     print("Adding build string:\n----\n%\n----\n", build_string);
+}
+
+get_bucket_size_or_default :: (header: *Code_Struct) -> int {
+    DEFAULT_ITEMS_PER_BUCKET :: 32;
+    BUCKET_SIZE_NOTE :: "bucket_size=";
+    for header.notes if begins_with(it.text, BUCKET_SIZE_NOTE) {
+        items_per_bucket := slice(it.text, BUCKET_SIZE_NOTE.count, 8);
+        return parse_int(*items_per_bucket);
+    }
+    return DEFAULT_ITEMS_PER_BUCKET;
 }
 
 #import "Basic";

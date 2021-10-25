@@ -19,6 +19,7 @@ simulate :: (dt: float) {
     using entity_storage;
     for _Block simulate(it, dt);
     for _Coin simulate(it, dt);
+    for _Player simulate(it, dt);
 
     if input_down(.MOUSE_BUTTON_LEFT) {
         b: Block;
@@ -38,6 +39,7 @@ present :: (window: Window_Type) {
     using entity_storage;
     for _Coin present(it);
     for _Block present(it);
+    for _Player present(it);
 
     draw_debug_text(4, RENDER_HEIGHT - FONT_SIZE - 4, tprint("Blocks: %", _Block.count));
 
