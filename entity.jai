@@ -31,7 +31,6 @@ spawn :: (entity: $T/Entity) -> Handle(T) {
     pointer.gen = <<gen;
     pointer.loc = locator;
     pointer.despawning = false;
-    //print("spawning %#%\n", T, <<gen);
 
     handle: Handle(T);
     handle.ptr = pointer;
@@ -47,7 +46,6 @@ despawn :: (handle: Handle($T)) {
     handle.ptr.despawning = true;
     #insert #run sprint("despawning_array := *entity_storage.despawning._%;", T);
     array_add(despawning_array, handle.loc);
-    //print("despawning %#%\n", T, handle.gen);
 }
 
 // pretty sure this is just going to be for despawning yourself?

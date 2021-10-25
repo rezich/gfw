@@ -13,7 +13,7 @@ build :: () {
 
     // automatically add all entity definition source files
     entity_files := file_list("entities/");
-    for entity_files add_build_file(tprint("%/%", #filepath, it), w);
+    for entity_files add_build_string(tprint("#load \"%/%\";", #filepath, it), w);
 
     message_loop();
 
