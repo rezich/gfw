@@ -11,11 +11,7 @@ build :: () {
 
     add_build_file(tprint("%/main.jai", #filepath), w);
 
-    // automatically add all entity definition source files
-    entity_files := file_list("entities/");
-    for entity_files add_build_string(tprint("#load \"%/%\";", #filepath, it), w);
-
-    init(*entity_items_per_bucket);
+    gfw_prebuild_step(w);
 
     message_loop();
 
@@ -29,8 +25,22 @@ message_loop :: () {
     while true {
         message := compiler_wait_for_message();
         if !message break;
-        if message.kind == {
-          case .TYPECHECKED;
+        if message.kind == .COMPLETE break;
+        gfw_build_step(message);
+    }
+}
+
+gfw_prebuild_step :: inline (w: Workspace) {
+    // automatically add all entity definition source files
+    entity_files := file_list("entities/");
+    for entity_files add_build_string(tprint("#load \"%/%\";", #filepath, it), w);
+
+    init(*entity_items_per_bucket);
+}
+
+gfw_build_step :: inline (message: *Message) {
+    if message.kind == {
+        case .TYPECHECKED;
             typechecked := cast(*Message_Typechecked) message;
             for typechecked.structs {
                 code_struct := it.expression;
@@ -43,8 +53,8 @@ message_loop :: () {
                     }
                 }
             }
-            
-          case .PHASE;
+        
+        case .PHASE;
             phase := cast(*Message_Phase) message;
             if phase.phase == .TYPECHECKED_ALL_WE_CAN {
                 if !generated_code {
@@ -52,10 +62,6 @@ message_loop :: () {
                     generated_code = true;
                 }
             }
-            
-          case .COMPLETE;
-            break;
-        }
     }
 }
 
@@ -127,7 +133,7 @@ generate_code :: (w: Workspace) {
         print_to_builder(*despawning_builder, "        _%: [..] Bucket_Locator;\n", it);
         print_to_builder(*cleanup_builder, "    for despawning._%1 {\n        bucket_array_remove(*_%1, it);\n        //print(\"ACTUALLY despawning %1\\n\");\n    }\n    array_reset(*despawning._%1);\n", it);
     }
-    
+
     entity_storage_string = builder_to_string(*entity_storage_builder);
     reset_entity_storage_string = builder_to_string(*reset_entity_storage_builder);
     reset_entity_storage_individual_string = builder_to_string(*reset_entity_storage_individual_builder);
