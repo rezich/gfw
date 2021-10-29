@@ -15,6 +15,8 @@ build :: () {
     entity_files := file_list("entities/");
     for entity_files add_build_string(tprint("#load \"%/%\";", #filepath, it), w);
 
+    init(*entity_items_per_bucket);
+
     message_loop();
 
     compiler_end_intercept(w);
@@ -37,7 +39,7 @@ message_loop :: () {
                     added := array_add_if_unique(*entity_type_names, name);
                     if added {
                         print("Detected entity '%'.\n", name);
-                        array_add(*entity_items_per_bucket, get_bucket_size(code_struct));
+                        table_add(*entity_items_per_bucket, name, get_bucket_size(code_struct));
                     }
                 }
             }
@@ -60,7 +62,7 @@ message_loop :: () {
 generated_code := false;
 
 entity_type_names: [..] string;
-entity_items_per_bucket: [..] int;
+entity_items_per_bucket: Table(string, int);
 
 INSERTION_STRING :: #string DONE
 NUM_ENTITY_TYPES :: %1;
@@ -95,7 +97,7 @@ cleanup_despawning_entities :: () {
 DONE
 
 generate_code :: (w: Workspace) {
-    //quick_sort(entity_type_names, compare_strings);
+    quick_sort(entity_type_names, compare_strings);
 
     type_names := join(..entity_type_names, ", ");
     type_names_for_enum := join(..entity_type_names, ";\n    ");
@@ -105,7 +107,9 @@ generate_code :: (w: Workspace) {
         defer free_buffers(*builder);
 
         for it, i: entity_type_names {
-            print_to_builder(*builder, "    _%1: Bucket_Array(%1, %2, true);\n", it, entity_items_per_bucket[i]);
+            items_per_bucket, success := table_find(entity_items_per_bucket, it);
+            assert(success);
+            print_to_builder(*builder, "    _%1: Bucket_Array(%1, %2, true);\n", it, items_per_bucket);
         }
         entity_storage_string = builder_to_string(*builder);
     }
@@ -172,3 +176,4 @@ get_bucket_size :: (header: *Code_Struct) -> int {
 #import "String";
 #import "Sort";
 #import "File_Utilities";
+#import "Hash_Table";
